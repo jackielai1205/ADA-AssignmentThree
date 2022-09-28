@@ -9,8 +9,9 @@ public class BinarySearchMain {
         tree.add(30);
         tree.add(28);
         tree.add(29);
-        tree.printLevelOrder();
-        tree.remove(30);
-        tree.printLevelOrder();
+//        tree.printLevelOrder();
+//        tree.remove(30);
+        System.out.println(tree.contain(29));
+//        tree.printLevelOrder();
     }
 }

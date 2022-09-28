@@ -25,7 +25,6 @@ public class BinarySearchTree<E extends Comparable<E>> {
         }
         List<BinarySearchNode<E>> visitedNodes = new ArrayList<>();
         addRecursionHelper(newNode, root, visitedNodes);
-        System.out.println(visitedNodes);
     }
 
     private void addRecursionHelper(BinarySearchNode<E> newNode, BinarySearchNode<E> currentNode, List<BinarySearchNode<E>> visitedNodes){
@@ -57,7 +56,6 @@ public class BinarySearchTree<E extends Comparable<E>> {
         }
         List<BinarySearchNode<E>> visitedNodes = new ArrayList<>();
         removeHelper(removeNode, root, null, visitedNodes);
-        System.out.println(visitedNodes);
     }
 
     private BinarySearchNode<E> removeHelper(BinarySearchNode<E> removeNode, BinarySearchNode<E> root, Boolean isLeftRemove, List<BinarySearchNode<E>> visitedNodes){
@@ -143,11 +141,17 @@ public class BinarySearchTree<E extends Comparable<E>> {
         return containHelper(checkNode, root);
     }
 
-//    private boolean containHelper(BinarySearchNode<E> checkNode, BinarySearchNode<E> root){
-//        BinarySearchNode<E> currentNode = root;
-//        int difference = checkNode.getElement().compareTo(currentNode.getElement());
-//        if(difference )
-//    }
+    private boolean containHelper(BinarySearchNode<E> checkNode, BinarySearchNode<E> root){
+        BinarySearchNode<E> currentNode = root;
+        int difference = currentNode.getElement().compareTo(checkNode.getElement());
+        if(difference > 0){
+            return containHelper(checkNode, root.getLeftChildren());
+        }else if(difference < 0){
+            return containHelper(checkNode, root.getRightChildren());
+        }else {
+            return true;
+        }
+    }
 
     /* Print nodes at a given level */
     void printGivenLevel(BinarySearchNode root, int level)
