@@ -5,6 +5,10 @@ public class BinarySearchTree<E extends Comparable<E>> {
 
     private BinarySearchNode<E> root;
 
+    public BinarySearchTree() {
+        root = null;
+    }
+
     public BinarySearchNode<E> getRoot() {
         return root;
     }
