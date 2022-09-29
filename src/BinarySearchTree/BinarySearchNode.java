@@ -1,3 +1,5 @@
+package BinarySearchTree;
+
 public class BinarySearchNode<E extends Comparable<E>> {
 
     private final E element;

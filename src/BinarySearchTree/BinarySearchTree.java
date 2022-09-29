@@ -1,3 +1,5 @@
+package BinarySearchTree;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,6 +9,14 @@ public class BinarySearchTree<E extends Comparable<E>> {
 
     public BinarySearchTree() {
         root = null;
+    }
+
+    public static void main(String[] args){
+        BinarySearchTree<String> tree = new BinarySearchTree<String>();
+        tree.add("dog");
+        tree.add("cat");
+        tree.add("owl");
+        tree.printLevelOrder();
     }
 
     public BinarySearchNode<E> getRoot() {
@@ -191,7 +201,7 @@ public class BinarySearchTree<E extends Comparable<E>> {
     }
 
     /* function to print level order traversal of tree*/
-    void printLevelOrder()
+    public void printLevelOrder()
     {
         int h = height(root);
         int i;

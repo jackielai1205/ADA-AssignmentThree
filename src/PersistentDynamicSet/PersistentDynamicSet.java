@@ -1,3 +1,7 @@
+package PersistentDynamicSet;
+
+import BinarySearchTree.*;
+
 import java.util.HashMap;
 
 public class PersistentDynamicSet<E extends Comparable<E>> {
@@ -8,8 +12,17 @@ public class PersistentDynamicSet<E extends Comparable<E>> {
 
     public PersistentDynamicSet() {
         versionControl = new HashMap<>();
-        latestVersionTree = new BinarySearchTree<>();
+        latestVersionTree = new BinarySearchTree<E>();
         versionId = 1;
+    }
+
+    public static void main(String[] args){
+        PersistentDynamicSet<String> set = new PersistentDynamicSet<String>();
+        set.add("dog");
+        set.add("cat");
+        set.add("owl");
+        set.getVersionTree(1).printLevelOrder();
+        set.getLatestVersionTree().printLevelOrder();
     }
 
     //Add
@@ -18,12 +31,12 @@ public class PersistentDynamicSet<E extends Comparable<E>> {
     }
 
     public void add(BinarySearchNode<E> newNode){
-        BinarySearchTree<E> newTree = new BinarySearchTree<>();
+        BinarySearchTree<E> newTree = new BinarySearchTree<E>();
         BinarySearchTree<E> previousTree = latestVersionTree;
         if(previousTree.getRoot() == null){
             newTree.setRoot(newNode);
         }else{
-            newTree.add(duplicateNode(previousTree.getRoot()));
+            newTree.setRoot(duplicateNode(previousTree.getRoot()));
             addHelper(newTree.getRoot(), previousTree.getRoot(), newNode);
         }
         addNewVersion(newTree);
@@ -58,11 +71,11 @@ public class PersistentDynamicSet<E extends Comparable<E>> {
 
     public void remove(BinarySearchNode<E> removeNode){
         BinarySearchTree<E> previousTreeNode = latestVersionTree;
-        BinarySearchTree<E> newTree = new BinarySearchTree<>();
+        BinarySearchTree<E> newTree = new BinarySearchTree<E>();
         if(previousTreeNode.getRoot() == null){
             return;
         }
-        newTree.add(duplicateNode(previousTreeNode.getRoot()));
+        newTree.setRoot(duplicateNode(previousTreeNode.getRoot()));
         removeHelper(newTree.getRoot(), previousTreeNode.getRoot(), removeNode, null);
         addNewVersion(newTree);
         latestVersionTree = newTree;
