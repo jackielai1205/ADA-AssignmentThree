@@ -2,6 +2,8 @@ package BalancedPersistentDynamicSet;
 
 import BinarySearchTree.BinarySearchTree;
 
+import java.io.PrintStream;
+
 public class RedBlackTree<E extends Comparable<E>> {
 
     private RedBlackTreeNode<E> root;
@@ -19,46 +21,51 @@ public class RedBlackTree<E extends Comparable<E>> {
         this.root = root;
     }
 
-    void printGivenLevel(RedBlackTreeNode<E> root, int level)
-    {
+    //Print function refer to https://www.baeldung.com/java-print-binary-tree-diagram
+    public void traverseNodes(StringBuilder sb, String padding, String pointer, RedBlackTreeNode<E> node,
+                              boolean hasRightSibling) {
+        if (node != null) {
+            sb.append("\n");
+            sb.append(padding);
+            sb.append(pointer);
+            sb.append(node.getElement());
+
+            StringBuilder paddingBuilder = new StringBuilder(padding);
+            if (hasRightSibling) {
+                paddingBuilder.append("│  ");
+            } else {
+                paddingBuilder.append("   ");
+            }
+
+            String paddingForBoth = paddingBuilder.toString();
+            String pointerRight = "└──";
+            String pointerLeft = (node.getRightChildren() != null) ? "├──" : "└──";
+
+            traverseNodes(sb, paddingForBoth, pointerLeft, node.getLeftChildren(), node.getRightChildren() != null);
+            traverseNodes(sb, paddingForBoth, pointerRight, node.getRightChildren(), false);
+        }
+    }
+
+    public String traversePreOrder(RedBlackTreeNode<E> root) {
+
         if (root == null) {
-            System.out.print("null ");
-            return;
+            return "";
         }
-        if (level == 1) {
-            System.out.print(root.getElement() + " ");
-        }
-        else if (level > 1) {
-            printGivenLevel(root.getLeftChildren(), level - 1);
-            printGivenLevel(root.getRightChildren(), level - 1);
-        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(root.getElement());
+
+        String pointerRight = "└──";
+        String pointerLeft = (root.getRightChildren() != null) ? "├──" : "└──";
+
+        traverseNodes(sb, "", pointerLeft, root.getLeftChildren(), root.getRightChildren() != null);
+        traverseNodes(sb, "", pointerRight, root.getRightChildren(), false);
+
+        return sb.toString();
     }
 
-    int height(RedBlackTreeNode<E> root)
-    {
-        if (root == null)
-            return 0;
-        else {
-            /* compute height of each subtree */
-            int lheight = height(root.getLeftChildren());
-            int rheight = height(root.getRightChildren());
-
-            /* use the larger one */
-            if (lheight > rheight)
-                return (lheight + 1);
-            else
-                return (rheight + 1);
-        }
+    public void print(PrintStream os) {
+        os.print(traversePreOrder(root));
     }
 
-    /* function to print level order traversal of tree*/
-    public void printLevelOrder()
-    {
-        int h = height(root);
-        int i;
-        for (i = 1; i <= h; i++) {
-            printGivenLevel(root, i);
-            System.out.print(System.lineSeparator());
-        }
-    }
 }

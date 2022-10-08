@@ -17,12 +17,17 @@ public class PersistentDynamicSet<E extends Comparable<E>> {
     }
 
     public static void main(String[] args){
-        PersistentDynamicSet<String> set = new PersistentDynamicSet<String>();
-        set.add("dog");
-        set.add("cat");
-        set.add("owl");
-        set.getVersionTree(1).printLevelOrder();
-        set.getLatestVersionTree().printLevelOrder();
+        PersistentDynamicSet<Integer> set = new PersistentDynamicSet<Integer>();
+        set.add(9);
+        set.add(5);
+        set.add(15);
+        set.add(7);
+        set.add(6);
+        set.add(20);
+        set.add(13);
+        set.getLatestVersionTree().print(System.out);
+        set.remove(9);
+        set.getLatestVersionTree().print(System.out);
     }
 
     //Add
@@ -70,86 +75,124 @@ public class PersistentDynamicSet<E extends Comparable<E>> {
     }
 
     public void remove(BinarySearchNode<E> removeNode){
-        BinarySearchTree<E> previousTreeNode = latestVersionTree;
+        BinarySearchTree<E> previousTree = latestVersionTree;
         BinarySearchTree<E> newTree = new BinarySearchTree<E>();
-        if(previousTreeNode.getRoot() == null){
+        if(previousTree.getRoot() == null){
             return;
         }
-        newTree.setRoot(duplicateNode(previousTreeNode.getRoot()));
-        removeHelper(newTree.getRoot(), previousTreeNode.getRoot(), removeNode, null);
+        if(previousTree.getRoot().getElement() == removeNode.getElement()){
+            newTree.setRoot(removeRootNode(previousTree.getRoot()));
+        }else{
+            newTree.setRoot(duplicateNode(previousTree.getRoot()));
+            removeHelper(newTree.getRoot(), previousTree.getRoot(), removeNode, null);
+        }
         addNewVersion(newTree);
         latestVersionTree = newTree;
+    }
+
+    private BinarySearchNode<E> removeRootNode(BinarySearchNode<E> referenceNode){
+        int numberOfChildren = 0;
+        if(referenceNode.getRightChildren() != null){
+            numberOfChildren++;
+        }
+        if(referenceNode.getLeftChildren() != null){
+            numberOfChildren++;
+        }
+        switch (numberOfChildren){
+            case 0:
+                return null;
+            case 1:
+                if(referenceNode.getRightChildren() != null){
+                    return referenceNode.getRightChildren();
+                }
+                if(referenceNode.getLeftChildren() != null){
+                    return referenceNode.getLeftChildren();
+                }
+            case 2:
+                BinarySearchNode<E> newTreeRoot = duplicateNode(referenceNode);
+                BinarySearchNode<E> newTreeCurrentNode = newTreeRoot;
+                BinarySearchNode<E> referenceTreeCurrentNode = referenceNode;
+
+                if(referenceTreeCurrentNode.getLeftChildren() != null){
+                    BinarySearchNode<E> newDuplicateNode = duplicateNode(referenceTreeCurrentNode.getLeftChildren());
+                    newTreeCurrentNode.setLeftChildren(newDuplicateNode);
+                    newTreeCurrentNode.setRightChildren(referenceTreeCurrentNode.getRightChildren());
+                    newTreeCurrentNode = newTreeCurrentNode.getLeftChildren();
+                    referenceTreeCurrentNode = referenceTreeCurrentNode.getLeftChildren();
+
+                    while(referenceTreeCurrentNode.getRightChildren().getRightChildren() != null){
+                        newDuplicateNode = duplicateNode(referenceTreeCurrentNode.getRightChildren());
+                        newTreeCurrentNode.setRightChildren(newDuplicateNode);
+                        newTreeCurrentNode.setLeftChildren(referenceTreeCurrentNode.getLeftChildren());
+                        newTreeCurrentNode = newTreeCurrentNode.getRightChildren();
+                        referenceTreeCurrentNode = referenceTreeCurrentNode.getRightChildren();
+                    }
+                    BinarySearchNode<E> parentNode = newTreeCurrentNode;
+                    BinarySearchNode<E> replaceNode = duplicateNode(referenceTreeCurrentNode.getRightChildren());
+                    parentNode.setLeftChildren(referenceTreeCurrentNode.getLeftChildren());
+                    parentNode.setRightChildren(referenceTreeCurrentNode.getRightChildren().getLeftChildren());
+                    replaceNode.setLeftChildren(newTreeRoot.getLeftChildren());
+                    replaceNode.setRightChildren(referenceNode.getRightChildren());
+                    return replaceNode;
+                }else if(referenceTreeCurrentNode.getRightChildren() != null){
+                    return referenceTreeCurrentNode.getRightChildren();
+                }
+        }
+        throw new IllegalStateException();
     }
 
     private BinarySearchNode<E> removeHelper(BinarySearchNode<E> currentTreeNode, BinarySearchNode<E> currentPreviousTreeNode, BinarySearchNode<E> removeNode, Boolean isLeftRemove){
         int difference = currentPreviousTreeNode.getElement().compareTo(removeNode.getElement());
         if(difference > 0){
-            if(isLeftRemove != null){
-                isLeftRemove = true;
-            }
             currentTreeNode.setLeftChildren(duplicateNode(currentPreviousTreeNode.getLeftChildren()));
             currentTreeNode.setRightChildren(currentPreviousTreeNode.getRightChildren());
             currentTreeNode.setLeftChildren(removeHelper(currentTreeNode.getLeftChildren(), currentPreviousTreeNode.getLeftChildren(), removeNode, isLeftRemove));
         }else if(difference < 0){
-            if(isLeftRemove != null){
-                isLeftRemove = false;
-            }
             currentTreeNode.setRightChildren(duplicateNode(currentPreviousTreeNode.getRightChildren()));
             currentTreeNode.setLeftChildren(currentPreviousTreeNode.getLeftChildren());
             currentTreeNode.setRightChildren(removeHelper(currentTreeNode.getRightChildren(), currentPreviousTreeNode.getRightChildren(), removeNode, isLeftRemove));
         }else{
-            if(isLeftRemove == null || isLeftRemove){
-                return leftRemoveNode(currentPreviousTreeNode);
-            }else{
-                return rightRemoveNode(currentPreviousTreeNode);
-            }
+            return removeNode(currentPreviousTreeNode);
         }
         return currentTreeNode;
     }
 
-    private BinarySearchNode<E> leftRemoveNode(BinarySearchNode<E> removeNode){
-        BinarySearchNode<E> currentNode = removeNode;
-        BinarySearchNode<E> parentNode = currentNode;
-        if(currentNode.getLeftChildren() != null){
-            currentNode = currentNode.getLeftChildren();
-        }else{
-            return currentNode.getRightChildren();
+    private BinarySearchNode<E> removeNode(BinarySearchNode<E> referenceNode){
+        int numberOfChildren = 0;
+        if(referenceNode.getRightChildren() != null){
+            numberOfChildren++;
         }
-        while(currentNode.getRightChildren() != null){
-            parentNode = currentNode;
-            currentNode = currentNode.getRightChildren();
+        if(referenceNode.getLeftChildren() != null){
+            numberOfChildren++;
         }
-        if(currentNode.getLeftChildren() != null){
-            parentNode.setRightChildren(currentNode.getLeftChildren());
-            currentNode.setLeftChildren(removeNode.getLeftChildren());
+        switch (numberOfChildren){
+            case 0:
+                return null;
+            case 1:
+                return (referenceNode.getRightChildren() != null)? referenceNode.getRightChildren() : referenceNode.getLeftChildren();
+            case 2:
+                BinarySearchNode<E> newTreeRoot = duplicateNode(referenceNode);
+                BinarySearchNode<E> newTreeCurrentNode = newTreeRoot;
+                BinarySearchNode<E> referenceTreeCurrentNode = referenceNode;
+                while(referenceTreeCurrentNode.getRightChildren().getRightChildren() != null){
+                    BinarySearchNode<E> newDuplicateNode;
+                    newDuplicateNode = duplicateNode(referenceTreeCurrentNode.getRightChildren());
+                    newTreeCurrentNode.setRightChildren(newDuplicateNode);
+                    newTreeCurrentNode.setLeftChildren(referenceTreeCurrentNode.getLeftChildren());
+                    newTreeCurrentNode = newTreeCurrentNode.getRightChildren();
+                    referenceTreeCurrentNode = referenceTreeCurrentNode.getRightChildren();
+                }
+                BinarySearchNode<E> parentNode = newTreeCurrentNode;
+                BinarySearchNode<E> replaceNode = duplicateNode(referenceTreeCurrentNode.getRightChildren());
+                parentNode.setLeftChildren(referenceTreeCurrentNode.getLeftChildren());
+                parentNode.setRightChildren(referenceTreeCurrentNode.getRightChildren().getLeftChildren());
+                replaceNode.setLeftChildren(newTreeRoot.getLeftChildren());
+                replaceNode.setRightChildren(referenceNode.getRightChildren());
+                return replaceNode;
         }
-        currentNode.setRightChildren(removeNode.getRightChildren());
-        removeNode.setRightChildren(null);
-        removeNode.setLeftChildren(null);
-        return currentNode;
+        throw new IllegalStateException();
     }
 
-    private BinarySearchNode<E> rightRemoveNode(BinarySearchNode<E> removeNode){
-        BinarySearchNode<E> currentNode = removeNode;
-        BinarySearchNode<E> parentNode = currentNode;
-        if(currentNode.getRightChildren() != null){
-            currentNode = currentNode.getRightChildren();
-        }else{
-            return currentNode.getLeftChildren();
-        }
-        while(currentNode.getLeftChildren() != null){
-            parentNode = currentNode;
-            currentNode = currentNode.getLeftChildren();
-        }
-        if(currentNode.getRightChildren() != null){
-            parentNode.setLeftChildren(currentNode.getRightChildren());
-            currentNode.setRightChildren(removeNode.getLeftChildren());
-        }
-        currentNode.setLeftChildren(removeNode.getLeftChildren());
-        removeNode.setRightChildren(null);
-        removeNode.setLeftChildren(null);
-        return currentNode;
-    }
 
     public void addNewVersion(BinarySearchTree<E> newTree){
         versionControl.put(versionId, newTree);
@@ -157,6 +200,9 @@ public class PersistentDynamicSet<E extends Comparable<E>> {
     }
 
     public BinarySearchNode<E> duplicateNode(BinarySearchNode<E> node){
+        if(node == null){
+            return null;
+        }
         return new BinarySearchNode<E>(node.getElement());
     }
 
@@ -167,4 +213,6 @@ public class PersistentDynamicSet<E extends Comparable<E>> {
     public BinarySearchTree<E> getLatestVersionTree(){
         return latestVersionTree;
     }
+
+
 }
